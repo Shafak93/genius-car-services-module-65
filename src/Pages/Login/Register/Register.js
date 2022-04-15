@@ -1,33 +1,45 @@
-import React from 'react';
-import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import React, { useState } from 'react';
+import { useCreateUserWithEmailAndPassword, useUpdateProfile } from 'react-firebase-hooks/auth';
 import { Button, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import auth from '../../../firebase.init';
 import SocialLogin from '../SocialLogin/SocialLogin';
+import { async } from '@firebase/util';
+import Loading from '../../Shared/Loading/Loading';
 
 const Register = () => {
+    const [agree, setAgree] = useState(false);
     const [
         createUserWithEmailAndPassword,
         user,
         loading,
         error,
-      ] = useCreateUserWithEmailAndPassword(auth);
+      ] = useCreateUserWithEmailAndPassword(auth, {sendEmailVerification:true});
+      const [updateProfile, updating, error1] = useUpdateProfile(auth);
 
     const navigate = useNavigate();
     const navigateLogin =() =>{
         navigate('/login')
     }
-    if(user){
-        navigate('/home')
+    // if(user){
+    //     navigate('/home')
+    // }
+    if(loading || updating){
+        return <Loading></Loading>
     }
 
-    const handleRegister = event =>{
+    const handleRegister = async (event) =>{
         event.preventDefault();
         const name = event.target.name.value;
         const email = event.target.email.value;
         const password = event.target.password.value;
+        // const agree = event.target.terms.checked;
 
-        createUserWithEmailAndPassword(email, password)
+           await createUserWithEmailAndPassword(email, password)
+           await updateProfile({ displayName : name});
+          alert('Updated profile');
+
+          navigate('/home')
     }
     return (
         <div className='container w-50 mx-auto'>
@@ -50,7 +62,17 @@ const Register = () => {
                     <Form.Label>Password</Form.Label>
                     <Form.Control type="password" name='password' placeholder="Password"  required/>
                 </Form.Group>
-                <Button variant="primary" type="submit">
+                <Form.Group className="mb-3" controlId="formBasicCheckbox">
+                    <Form.Check 
+                    className={agree ? 'text-primary' : 'text-danger'} 
+                    onClick={()=>setAgree(!agree)} 
+                    type="checkbox" name='terms' 
+                    label="Accept terms and condition of genius car." />
+                </Form.Group>
+                <Button
+                disabled={!agree}
+                 variant="primary"
+                  type="submit">
                     Register
                 </Button>
             </Form>
