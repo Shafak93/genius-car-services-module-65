@@ -13,9 +13,6 @@ const SocialLogin = () => {
     const [signInWithFacebook, user2, loading2, error2] = useSignInWithFacebook(auth);
     const navigate = useNavigate();
     let errorElement;
-    // if (loading || loading1 || loading2) {
-    //     return <p>Loading...</p>;
-    //   }
       if(loading ||loading1 || loading2){
         return <Loading></Loading>
     }
